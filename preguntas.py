@@ -22,7 +22,7 @@ def pregunta_01():
     40
 
     """
-    return
+    return len(tbl0)
 
 
 def pregunta_02():
@@ -33,7 +33,7 @@ def pregunta_02():
     4
 
     """
-    return
+    return tbl0.shape[1]
 
 
 def pregunta_03():
@@ -50,7 +50,10 @@ def pregunta_03():
     Name: _c1, dtype: int64
 
     """
-    return
+
+    result: pd.DataFrame = tbl0.groupby("_c1")["_c1"].count()
+
+    return result
 
 
 def pregunta_04():
@@ -65,7 +68,8 @@ def pregunta_04():
     E    4.785714
     Name: _c2, dtype: float64
     """
-    return
+    result: pd.DataFrame = tbl0.groupby("_c1")["_c2"].mean()
+    return result
 
 
 def pregunta_05():
@@ -82,7 +86,8 @@ def pregunta_05():
     E    9
     Name: _c2, dtype: int64
     """
-    return
+    result: pd.DataFrame = tbl0.groupby("_c1")["_c2"].max()
+    return result
 
 
 def pregunta_06():
@@ -94,7 +99,11 @@ def pregunta_06():
     ['A', 'B', 'C', 'D', 'E', 'F', 'G']
 
     """
-    return
+    result: pd.DataFrame = tbl1["_c4"].unique()
+    result = list(map(lambda letter: letter.upper(), result))
+    result.sort()
+    
+    return result
 
 
 def pregunta_07():
@@ -110,7 +119,9 @@ def pregunta_07():
     E    67
     Name: _c2, dtype: int64
     """
-    return
+    result: pd.DataFrame = tbl0.groupby('_c1')['_c2'].sum()
+
+    return result
 
 
 def pregunta_08():
@@ -128,7 +139,9 @@ def pregunta_08():
     39   39   E    5  1998-01-26    44
 
     """
-    return
+    tbl0_sum = tbl0.copy()
+    tbl0_sum['suma'] = tbl0['_c0'] + tbl0['_c2']
+    return tbl0_sum
 
 
 def pregunta_09():
@@ -146,14 +159,15 @@ def pregunta_09():
     39   39   E    5  1998-01-26  1998
 
     """
-    return
+    tbl0_year = tbl0.copy()
+    tbl0_year['year'] = tbl0['_c3'].map(lambda x: x.split('-')[0])
+    return tbl0_year
 
 
 def pregunta_10():
     """
     Construya una tabla que contenga _c1 y una lista separada por ':' de los valores de
     la columna _c2 para el archivo `tbl0.tsv`.
-
     Rta/
                                    _c1
       _c0
@@ -163,7 +177,12 @@ def pregunta_10():
     3   D                  1:2:3:5:5:7
     4   E  1:1:2:3:3:4:5:5:5:6:7:8:8:9
     """
-    return
+    tabla = tbl0.copy()
+    tabla = tabla.groupby('_c1').agg({'_c2': lambda var: sorted(list(var))})
+    for ind, fil in tabla.iterrows():
+        fil['_c2'] = ":".join([str(num) for num in fil['_c2']])
+
+    return tabla
 
 
 def pregunta_11():
@@ -182,14 +201,16 @@ def pregunta_11():
     38   38      d,e
     39   39    a,d,f
     """
-    return
+    newTable: pd.DataFrame = tbl1.groupby('_c0')['_c4'].apply(lambda x: ','.join(sorted(x)))
+    newTable = pd.DataFrame(newTable)
+    newTable.reset_index(inplace=True)
+    return newTable
 
 
 def pregunta_12():
     """
     Construya una tabla que contenga _c0 y una lista separada por ',' de los valores de
     la columna _c5a y _c5b (unidos por ':') de la tabla `tbl2.tsv`.
-
     Rta/
         _c0                                  _c5
     0     0        bbb:0,ddd:9,ggg:8,hhh:2,jjj:3
@@ -200,7 +221,15 @@ def pregunta_12():
     38   38                    eee:0,fff:9,iii:2
     39   39                    ggg:3,hhh:8,jjj:5
     """
-    return
+
+    tabla = tbl2.copy()
+    tabla['_c5'] = tabla['_c5a'] + ':' + tabla['_c5b'].astype(str)
+    tablares = tabla.groupby('_c0').agg({'_c5': lambda var: sorted(var)})
+    for ind, fil in tablares.iterrows():
+        fil['_c5'] = ",".join([str(num) for num in fil['_c5']])
+    tablares.insert(0, '_c0', range(40))
+
+    return tablares
 
 
 def pregunta_13():
@@ -217,4 +246,6 @@ def pregunta_13():
     E    275
     Name: _c5b, dtype: int64
     """
-    return
+    newTable: pd.DataFrame = pd.merge(tbl0, tbl2, on='_c0')
+    newTable = newTable.groupby('_c1')['_c5b'].sum()
+    return newTable

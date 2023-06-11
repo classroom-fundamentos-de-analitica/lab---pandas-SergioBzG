@@ -168,7 +168,6 @@ def pregunta_10():
     """
     Construya una tabla que contenga _c1 y una lista separada por ':' de los valores de
     la columna _c2 para el archivo `tbl0.tsv`.
-
     Rta/
                                    _c1
       _c0
@@ -178,11 +177,12 @@ def pregunta_10():
     3   D                  1:2:3:5:5:7
     4   E  1:1:2:3:3:4:5:5:5:6:7:8:8:9
     """
-    newTable = tbl0.groupby('_c1')['_c2'].apply(lambda x: ':'.join(sorted(list((map(str, x))))))
-    newTable =  pd.DataFrame(newTable)
-    newTable = newTable.reset_index()
-    newTable.rename(columns={'_c1': '_c0', '_c2': '_c1'}, inplace=True)
-    return newTable
+    tabla = tbl0.copy()
+    tabla = tabla.groupby('_c1').agg({'_c2': lambda var: sorted(list(var))})
+    for ind, fil in tabla.iterrows():
+        fil['_c2'] = ":".join([str(num) for num in fil['_c2']])
+
+    return tabla
 
 
 def pregunta_11():
@@ -211,7 +211,6 @@ def pregunta_12():
     """
     Construya una tabla que contenga _c0 y una lista separada por ',' de los valores de
     la columna _c5a y _c5b (unidos por ':') de la tabla `tbl2.tsv`.
-
     Rta/
         _c0                                  _c5
     0     0        bbb:0,ddd:9,ggg:8,hhh:2,jjj:3
@@ -222,12 +221,15 @@ def pregunta_12():
     38   38                    eee:0,fff:9,iii:2
     39   39                    ggg:3,hhh:8,jjj:5
     """
-    # newTable: pd.DataFrame = tbl2.groupby('_c0')['_c5a', '_c5b'].apply(lambda x: ','.join(sorted(x['_c5a'] + ':' + x['_c5b'].map(str))))
-    newTable: pd.DataFrame = tbl2.groupby('_c0')[['_c5a', '_c5b']].apply(lambda x: ','.join(sorted(x['_c5a'] + ':' + x['_c5b'].map(str))))
-    newTable = pd.DataFrame(newTable)
-    newTable.rename(columns={0: '_c5'})
-    newTable.reset_index(inplace=True)
-    return newTable
+
+    tabla = tbl2.copy()
+    tabla['_c5'] = tabla['_c5a'] + ':' + tabla['_c5b'].astype(str)
+    tablares = tabla.groupby('_c0').agg({'_c5': lambda var: sorted(var)})
+    for ind, fil in tablares.iterrows():
+        fil['_c5'] = ",".join([str(num) for num in fil['_c5']])
+    tablares.insert(0, '_c0', range(40))
+
+    return tablares
 
 
 def pregunta_13():
